@@ -1,64 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Grade Quiz</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
+<title>School Quiz</title>
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+}
 
-        .quiz-box {
-            width: 400px;
-            margin: auto;
-            border: 2px solid black;
-            padding: 20px;
-            border-radius: 10px;
-        }
+.box{
+background:white;
+width:500px;
+margin:auto;
+margin-top:50px;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
 
-        button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-        }
-    </style>
+button{
+padding:10px 20px;
+margin:5px;
+cursor:pointer;
+}
+
+#score{
+font-size:20px;
+font-weight:bold;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="quiz-box">
-        <h1>Grade Quiz</h1>
+<div class="box">
 
-        <p id="question">What is 2 + 2?</p>
+<h1>School Quiz</h1>
 
-        <button onclick="checkAnswer(3)">3</button>
-        <button onclick="checkAnswer(4)">4</button>
-        <button onclick="checkAnswer(5)">5</button>
+<h2>Choose a Subject</h2>
 
-        <p id="result"></p>
-    </div>
+<button onclick="mathQuiz()">Math</button>
+<button onclick="scienceQuiz()">Science</button>
+<button onclick="englishQuiz()">English</button>
 
-    <script>
-        function checkAnswer(answer) {
-            if (answer === 4) {
-                document.getElementById("result").innerHTML =
-                    "✅ Correct!";
-            } else {
-                document.getElementById("result").innerHTML =
-                    "❌ Wrong! Try again.";
-            }
-        }
-    </script>
+<h3 id="question">Click a subject to start!</h3>
 
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My First Website</title>
-</head>
-<body>
-    <h1>Hello!</h1>
-    <p>Welcome to my website.</p>
+<div id="answers"></div>
+
+<p id="result"></p>
+
+<p id="score">Score: 0</p>
+
+</div>
+
+<script>
+
+let score=0;
+
+function check(correct){
+
+if(correct){
+document.getElementById("result").innerHTML="✅ Correct!";
+score++;
+}
+else{
+document.getElementById("result").innerHTML="❌ Wrong!";
+}
+
+document.getElementById("score").innerHTML="Score: "+score;
+}
+
+function mathQuiz(){
+
+document.getElementById("question").innerHTML=
+"What is 8 × 7?";
+
+document.getElementById("answers").innerHTML=
+`
+<button onclick="check(false)">54</button>
+<button onclick="check(true)">56</button>
+<button onclick="check(false)">64</button>
+`;
+}
+
+function scienceQuiz(){
+
+document.getElementById("question").innerHTML=
+"Which planet is known as the Red Planet?";
+
+document.getElementById("answers").innerHTML=
+`
+<button onclick="check(false)">Earth</button>
+<button onclick="check(true)">Mars</button>
+<button onclick="check(false)">Jupiter</button>
+`;
+}
+
+function englishQuiz(){
+
+document.getElementById("question").innerHTML=
+"Which word is a noun?";
+
+document.getElementById("answers").innerHTML=
+`
+<button onclick="check(true)">School</button>
+<button onclick="check(false)">Run</button>
+<button onclick="check(false)">Quickly</button>
+`;
+}
+
+</script>
+
 </body>
 </html>
