@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBSE Quiz Portal</title>
+    <title>CBSE Interactive Quiz Portal</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -53,20 +53,33 @@
             border: none;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.3s;
         }
         button:hover { transform: translateY(-2px); }
         .hidden { display: none !important; }
+        
         .option-btn {
             background: rgba(255, 255, 255, 0.05);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: left;
+            transition: all 0.2s ease;
         }
-        .option-btn:hover {
-            background: linear-gradient(90deg, #00e5ff, #ff0080);
-            color: white;
-            border-color: transparent;
+        .option-btn:hover:not([disabled]) {
+            background: rgba(0, 229, 255, 0.2);
+            border-color: #00e5ff;
+        }
+
+        /* Instant Feedback States */
+        .option-btn.correct {
+            background: #00c853 !important;
+            border-color: #00c853 !important;
+            color: white !important;
+        }
+        .option-btn.incorrect {
+            background: #d50000 !important;
+            border-color: #d50000 !important;
+            color: white !important;
         }
     </style>
 </head>
@@ -104,80 +117,84 @@
     </div>
 
     <div class="container hidden" id="screen-results">
-        <h1>Test Complete</h1>
+        <h1>Evaluation Complete</h1>
         <p id="quiz-score" style="font-size: 2rem; color: #ff0080; font-weight:bold;"></p>
         <button onclick="location.reload()">Restart Portal</button>
     </div>
 
     <script>
-        // MAIN DATA BANK - You can keep adding distinct questions here
-        const masterDatabase = {
-            "6": {
-                "Mathematics": [
-                    { q: "What is the perimeter of a rectangle with length 5cm and breadth 3cm?", options: ["15 cm", "16 cm", "8 cm", "25 cm"], correct: 1 },
-                    { q: "Which of the following numbers is a perfect square?", options: ["22", "35", "49", "50"], correct: 2 },
-                    { q: "What is the value of 100 - 45 + 5?", options: ["50", "60", "55", "45"], correct: 1 }
-                ],
-                "Science": [
-                    { q: "Which component of air is essential for respiration in living organisms?", options: ["Nitrogen", "Carbon Dioxide", "Oxygen", "Argon"], answer: 2 },
-                    { q: "Which of these is a synthetic fiber?", options: ["Cotton", "Nylon", "Wool", "Silk"], correct: 1 }
-                ],
-                "Social Science": [
-                    { q: "Which planet is known as the Blue Planet?", options: ["Mars", "Earth", "Venus", "Jupiter"], correct: 1 },
-                    { q: "Who was the first Prime Minister of independent India?", options: ["Mahatma Gandhi", "Dr. B.R. Ambedkar", "Jawaharlal Nehru", "Sardar Patel"], correct: 2 }
-                ],
-                "English": [
-                    { q: "Identify the noun in the sentence: 'The dog barked loudly.'", options: ["barked", "loudly", "The", "dog"], correct: 3 }
-                ]
-            },
-            "10": {
-                "Science": [
-                    { q: "Which acid is present in tomato?", options: ["Citric acid", "Oxalic acid", "Lactic acid", "Tartaric acid"], correct: 1 },
-                    { q: "The focal length of a plane mirror is:", options: ["Zero", "Infinity", "25 cm", "-25 cm"], correct: 1 }
-                ]
-            }
+        // EXPANDED SEPARATE SUBJECT POOLS
+        const subjectsData = {
+            "English": [
+                { q: "What is the antonym of the word 'Ancient'?", options: ["Old", "Modern", "Historic", "Past"] },
+                { q: "Identify the pronoun in the sentence: 'She went to the market.'", options: ["She", "went", "market", "to"] },
+                { q: "Which of these is a regular verb?", options: ["Go", "Eat", "Walk", "See"] },
+                { q: "Choose the correctly spelled word:", options: ["Receive", "Recieve", "Receve", "Ricieve"] },
+                { q: "What is the plural form of 'Child'?", options: ["Childs", "Children", "Childrens", "Childes"] }
+            ],
+            "Mathematics": [
+                { q: "What is the value of x if 3x - 7 = 14?", options: ["7", "6", "5", "8"] },
+                { q: "What is the area of a square whose side is 6 cm?", options: ["36 sq cm", "24 sq cm", "12 sq cm", "18 sq cm"] },
+                { q: "What is the smallest prime number?", options: ["2", "1", "0", "3"] },
+                { q: "What is 15% of 200?", options: ["30", "20", "15", "40"] },
+                { q: "How many degrees are there in a straight line?", options: ["180°", "90°", "360°", "270°"] }
+            ],
+            "Science": [
+                { q: "Which gas do plants absorb during photosynthesis?", options: ["Carbon Dioxide", "Oxygen", "Nitrogen", "Hydrogen"] },
+                { q: "What is the SI unit of force?", options: ["Newton", "Joule", "Watt", "Pascal"] },
+                { q: "Which planet is closest to the Sun?", options: ["Mercury", "Venus", "Earth", "Mars"] },
+                { q: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Fe", "Gd"] },
+                { q: "Which component of blood helps in clotting?", options: ["Platelets", "Red Blood Cells", "White Blood Cells", "Plasma"] }
+            ],
+            "Social Science": [
+                { q: "Who is known as the Father of the Indian Constitution?", options: ["Dr. B.R. Ambedkar", "Mahatma Gandhi", "Jawaharlal Nehru", "Dr. Rajendra Prasad"] },
+                { q: "Which is the longest river in the world?", options: ["Nile", "Amazon", "Yangtze", "Mississippi"] },
+                { q: "In which year did India gain Independence?", options: ["1947", "1950", "1942", "1935"] },
+                { q: "What is the capital city of France?", options: ["Paris", "London", "Berlin", "Rome"] },
+                { q: "Which line divides India into almost two equal halves?", options: ["Tropic of Cancer", "Equator", "Tropic of Capricorn", "Prime Meridian"] }
+            ]
         };
 
         document.getElementById('launch-btn').addEventListener('click', function() {
             const selectedGrade = document.getElementById('grade').value;
-            const selectedSubject = document.getElementById('subject').value;
+            let selectedSubject = document.getElementById('subject').value;
             
-            // Extract core questions from data block
-            let baseQuestions = [];
-            if (masterDatabase[selectedGrade] && masterDatabase[selectedGrade][selectedSubject]) {
-                baseQuestions = [...masterDatabase[selectedGrade][selectedSubject]];
+            // Normalize alternate name "Science / Physics" to key match "Science"
+            if(selectedSubject === "Science / Physics") selectedSubject = "Science";
+
+            // Grab the subject specific list
+            let sourcePool = subjectsData[selectedSubject] || [];
+            let questions = [];
+
+            // Duplicate/Generate up to 30 unique variants specifically for that subject
+            let variantCounter = 1;
+            while(questions.length < 30 && sourcePool.length > 0) {
+                sourcePool.forEach(item => {
+                    if(questions.length < 30) {
+                        questions.push({
+                            q: `(${selectedSubject} Q${variantCounter}) ${item.q}`,
+                            // Store the first item as the absolute correct textual answer
+                            correctText: item.options[0], 
+                            options: [...item.options]
+                        });
+                        variantCounter++;
+                    }
+                });
             }
 
-            // AUTO GENERATOR FALLBACK: Generates unique standard questions if data block array is smaller than 30
-            let questions = [...baseQuestions];
-            if (questions.length < 30) {
-                const standardPool = [
-                    { q: "Which of these units is used to measure electrical current?", options: ["Volt", "Ampere", "Ohm", "Watt"], correct: 1 },
-                    { q: "What state of matter has a definite volume but no definite shape?", options: ["Solid", "Liquid", "Gas", "Plasma"], correct: 1 },
-                    { q: "Find the value of x if 2x + 5 = 15.", options: ["x = 10", "x = 2", "x = 5", "x = 4"], correct: 2 },
-                    { q: "Which gas is majorly responsible for the greenhouse effect?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], correct: 1 },
-                    { q: "Which geometric shape has exactly 5 straight sides?", options: ["Hexagon", "Pentagon", "Octagon", "Square"], correct: 1 },
-                    { q: "What is the chemical symbol for Water?", options: ["HO2", "CO2", "H2O", "NaCl"], correct: 2 },
-                    { q: "The process of plants preparing food is called:", options: ["Respiration", "Transpiration", "Photosynthesis", "Fermentation"], correct: 2 }
-                ];
-                
-                let counter = 1;
-                while (questions.length < 30) {
-                    let randomTemplate = standardPool[Math.floor(Math.random() * standardPool.length)];
-                    questions.push({
-                        q: `[Practice Set Q${counter}] ${randomTemplate.q}`,
-                        options: [...randomTemplate.options],
-                        correct: randomTemplate.correct
-                    });
-                    counter++;
-                }
-            }
-
-            // SHUFFLE LOGIC (Fisher-Yates Shuffle Algorithm)
+            // SHUFFLE ALGORITHM 1: Re-arrange the questions array
             for (let i = questions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [questions[i], questions[j]] = [questions[j], questions[i]];
             }
+
+            // SHUFFLE ALGORITHM 2: Re-arrange the options arrays individually inside each question
+            questions.forEach(item => {
+                for (let i = item.options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [item.options[i], item.options[j]] = [item.options[j], item.options[i]];
+                }
+            });
 
             let currentIndex = 0;
             let score = 0;
@@ -194,20 +211,39 @@
                 const optionsDiv = document.getElementById('quiz-options');
                 optionsDiv.innerHTML = '';
 
-                currentQ.options.forEach((opt, idx) => {
+                currentQ.options.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.className = 'option-btn';
                     btn.innerText = opt;
+                    
                     btn.onclick = function() {
-                        if (idx === currentQ.correct) score++;
-                        currentIndex++;
-                        if (currentIndex < questions.length) {
-                            renderQuestion();
+                        // Freeze all buttons so users cannot click multiple choices
+                        const allBtns = optionsDiv.querySelectorAll('.option-btn');
+                        allBtns.forEach(b => b.disabled = true);
+
+                        // Visual Verification Check
+                        if (opt === currentQ.correctText) {
+                            btn.classList.add('correct');
+                            score++;
                         } else {
-                            document.getElementById('screen-quiz').classList.add('hidden');
-                            document.getElementById('screen-results').classList.remove('hidden');
-                            document.getElementById('quiz-score').innerText = `Score: ${score} / 30`;
+                            btn.classList.add('incorrect');
+                            // Find and highlight the correct button in green so they can see the right choice
+                            allBtns.forEach(b => {
+                                if(b.innerText === currentQ.correctText) b.classList.add('correct');
+                            });
                         }
+
+                        // Short delay so they can read and learn the correct choice before sliding over
+                        setTimeout(() => {
+                            currentIndex++;
+                            if (currentIndex < questions.length) {
+                                renderQuestion();
+                            } else {
+                                document.getElementById('screen-quiz').classList.add('hidden');
+                                document.getElementById('screen-results').classList.remove('hidden');
+                                document.getElementById('quiz-score').innerText = `Final Score: ${score} / 30`;
+                            }
+                        }, 1200);
                     };
                     optionsDiv.appendChild(btn);
                 });
